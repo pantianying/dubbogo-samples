@@ -32,7 +32,8 @@ registries :
 
 references:
   "UserProvider":
-    # 可以指定多个registry，使用逗号隔开;不指定默认向所有注册中心注册
+    # Multiple registries can be specified, separated by commas;
+    # do not specify to register with all registries by default
     registry: "hangzhouzk"
     protocol : "dubbo"
     interface : "com.ikurento.user.UserProvider"
@@ -61,14 +62,29 @@ references:
       retries: 3
 
 protocol_conf:
+  # when you choose the Dubbo protocol, the following configuration takes effect
   dubbo:
     reconnect_interval: 0
+    # reconnect_interval is the actual number of connections a session can use
     connection_number: 2
-    heartbeat_period: "5s"
-    session_timeout: "20s"
-    pool_size: 64
+    # heartbeat_period is heartbeat interval between server and client connection.
+    # Effective by client configuration
+    heartbeat_period: "30s"
+    # when the session is inactive for more than session_timeout, the session may be closed
+    session_timeout: "30s"
+    # a reference has the size of the session connection pool
+    # that is the maximum number of sessions it may have
+    pool_size: 4
+    # the ttl time of getty session,Units are seconds.
+    # when select a session from the session pool, service will determine
+    # whether the last active time and the current time interval of the session exceed the pool_ttl.
+    # If they exceed the pool_ttl, the session will be closed.
+    # then select a session or create a new session
     pool_ttl: 600
+    # dubbo-go uses getty as the network connection library.
+    # The following is the relevant configuration of getty
     getty_session_param:
+      #  compress or not
       compress_encoding: false
       tcp_no_delay: true
       tcp_keep_alive: true
@@ -79,5 +95,7 @@ protocol_conf:
       tcp_read_timeout: "1s"
       tcp_write_timeout: "5s"
       wait_timeout: "1s"
+      # maximum len of data per request
+      # this refers to the total amount of data requested or returned
       max_msg_len: 10240
       session_name: "client"
